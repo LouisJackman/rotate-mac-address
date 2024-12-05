@@ -313,7 +313,7 @@ record Args(boolean viewHelp, String deviceName, long cycleSeconds, boolean dryR
 }
 
 /**
- * Program entrypoint and top-level error-handling.
+ * Program entry point and top-level error-handling.
  */
 public class RotateMACAddresses {
     public static final String USAGE = """
