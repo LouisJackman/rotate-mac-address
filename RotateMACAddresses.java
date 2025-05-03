@@ -1,6 +1,5 @@
-/**
- * Rotate MAC addresses on an interval. Run `java RotateMacAddresses.java --help` for usage.
- */
+/// Rotate MAC addresses on an interval. Run `java RotateMacAddresses.java
+/// --help` for usage.
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -18,9 +17,8 @@ import static java.lang.System.exit;
 import static java.lang.System.out;
 import static java.util.stream.Collectors.joining;
 
-/**
- * A NIC, network interface card, vendor: a pair consisting of a vendor identifier and a MAC address prefix.
- */
+/// A NIC, network interface card, vendor: a pair consisting of a vendor
+/// identifier and a MAC address prefix.
 enum NICVendor {
     Intel,
     Foxconn,
@@ -39,9 +37,7 @@ enum NICVendor {
         };
     }
 
-    /**
-     * @return A vendor-specific MAC address prefix.
-     */
+    /// @return A vendor-specific MAC address prefix.
     public String macAddressPrefix() {
         return switch (this) {
             case Intel -> "00:1b:77";
@@ -55,18 +51,14 @@ enum NICVendor {
     private static final NICVendor[] values = values();
     private static final Random valuesRandomGenerator = new Random();
 
-    /**
-     * @return A randomly chosen NIC vendor.
-     */
+    /// @return A randomly chosen NIC vendor.
     public static NICVendor randomlyChoose() {
         var i = valuesRandomGenerator.nextInt(values.length);
         return values[i];
     }
 }
 
-/**
- * Generate commands for settings MAC addresses, for a given platform.
- */
+/// Generate commands for settings MAC addresses, for a given platform.
 sealed interface MacAddressSettingCommandFactory {
     List<String> createMacAddressSettingCommand(
             String deviceName,
@@ -74,9 +66,7 @@ sealed interface MacAddressSettingCommandFactory {
     );
 }
 
-/**
- * Generate commands for setting MAC addresses on a non-Linux Unix system.
- */
+/// Generate commands for setting MAC addresses on a non-Linux Unix system.
 final class MacAddressSettingUnixCommandFactory implements MacAddressSettingCommandFactory {
     public List<String> createMacAddressSettingCommand(
             String deviceName,
@@ -85,9 +75,7 @@ final class MacAddressSettingUnixCommandFactory implements MacAddressSettingComm
     }
 }
 
-/**
- * Generate commands for setting MAC addresses on a Linux system.
- */
+/// Generate commands for setting MAC addresses on a Linux system.
 final class MacAddressSettingLinuxCommandFactory implements MacAddressSettingCommandFactory {
     public List<String> createMacAddressSettingCommand(
             String deviceName,
@@ -96,15 +84,12 @@ final class MacAddressSettingLinuxCommandFactory implements MacAddressSettingCom
     }
 }
 
-/**
- * A fully generated MAC address, plus the vendor its prefix represents.
- */
+/// A fully generated MAC address, plus the vendor its prefix represents.
 record MacAddress(NICVendor vendor, String address) {
     private static final Random randomGenerator = new Random();
 
-    /**
-     * @return A randomly generated MAC address with a prefix from a known vendor.
-     */
+    /// @return A randomly generated MAC address with a prefix from a known
+    /// vendor.
     public static MacAddress createRandom() {
         var vendorChoice = NICVendor.randomlyChoose();
         var suffix = IntStream
@@ -124,23 +109,19 @@ record MacAddress(NICVendor vendor, String address) {
     }
 }
 
-/**
- * Actually invoke side effects against the current OS, or just _log_ what would happen?
- */
+/// Actually invoke side effects against the current OS, or just _log_ what
+/// would happen?
 enum RunMode { dryRun, actualRun }
 
-/**
- * A failure happened while rotating a MAC address, something anticipated such as the MAC-setting command returning a
- * non-zero status code.
- */
+/// A failure happened while rotating a MAC address, something anticipated
+/// such as the MAC-setting command returning a non-zero status code.
 final class MacAddressRotationException extends RuntimeException {
     public MacAddressRotationException(String message) { super(message); }
 }
 
-/**
- * Rotate a MAC address for a provided device name. Tolerate up to `MACAddressRotater.MAX_EXCEPTION_COUNT` failures
- * before failing overall.
- */
+/// Rotate a MAC address for a provided device name. Tolerate up to
+/// [MACAddressRotater#MAX_EXCEPTION_COUNT] failures before failing
+/// overall.
 final class MACAddressRotater {
     private static final long MAX_EXCEPTION_COUNT = 3;
     private static final double CYCLE_VARIANCE = .25;
@@ -191,10 +172,8 @@ final class MACAddressRotater {
                 macAddress.vendor());
     }
 
-    /**
-     * Continually rotate a MAC address for the device overtime. Interrupt the thread or trigger a JVM shutdown to stop
-     * the rotation.
-     */
+    /// Continually rotate a MAC address for the device overtime. Interrupt
+    /// the thread or trigger a JVM shutdown to stop the rotation.
     public void rotate(long cycleSeconds, RunMode runMode) throws InterruptedException {
         var exceptionsSoFar = new ArrayDeque<Exception>();
         for (;;) {
@@ -228,17 +207,14 @@ final class MACAddressRotater {
     }
 }
 
-/**
- * A provided command-line argument was invalid in some way.
- */
+/// A provided command-line argument was invalid in some way.
 final class InvalidArgException extends RuntimeException {
     public InvalidArgException(String message) { super(message); }
 }
 
-/**
- * Arguments provided by the environment, e.g. command-line arguments or environment variables. See
- * `RotateMacAddresses.USAGE` for context about each one.
- */
+/// Arguments provided by the environment, e.g. command-line arguments or
+/// environment variables. See [RotateMacAddresses#USAGE] for context about
+/// each one.
 record Args(boolean viewHelp, String deviceName, long cycleSeconds, boolean dryRun) {
     public static final boolean DEFAULT_VIEW_HELP = false;
     public static final String DEFAULT_DEVICE_NAME = "eth0";
@@ -269,9 +245,7 @@ record Args(boolean viewHelp, String deviceName, long cycleSeconds, boolean dryR
         }
     }
 
-    /**
-     * Parse from command-line arguments.
-     */
+    /// Parse from command-line arguments.
     public static Args parse(String... args) {
         var viewHelp = new AtomicReference<Boolean>(null);
         var deviceName = new AtomicReference<String>(null);
@@ -312,9 +286,7 @@ record Args(boolean viewHelp, String deviceName, long cycleSeconds, boolean dryR
     }
 }
 
-/**
- * Program entry point and top-level error-handling.
- */
+/// Program entry point and top-level error-handling.
 public class RotateMACAddresses {
     public static final String USAGE = """
             
