@@ -1,12 +1,12 @@
 /// Rotate MAC addresses on an interval. Run `java RotateMacAddresses.java
 /// --help` for usage.
 
+import java.security.SecureRandom;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -43,13 +43,13 @@ enum NICVendor {
             case Intel -> "00:1b:77";
             case Foxconn -> "00:01:6c";
             case HewlettPackard -> "00:1b:78";
-            case Cisco -> "00:10:2";
+            case Cisco -> "00:10:29";
             case Amd -> "00:0c:87";
         };
     }
 
     private static final NICVendor[] values = values();
-    private static final Random valuesRandomGenerator = new Random();
+    private static final SecureRandom valuesRandomGenerator = new SecureRandom();
 
     /// @return A randomly chosen NIC vendor.
     public static NICVendor randomlyChoose() {
@@ -86,7 +86,7 @@ final class MacAddressSettingLinuxCommandFactory implements MacAddressSettingCom
 
 /// A fully generated MAC address, plus the vendor its prefix represents.
 record MacAddress(NICVendor vendor, String address) {
-    private static final Random randomGenerator = new Random();
+    private static final SecureRandom randomGenerator = new SecureRandom();
 
     /// @return A randomly generated MAC address with a prefix from a known
     /// vendor.
@@ -99,10 +99,7 @@ record MacAddress(NICVendor vendor, String address) {
                 .range(1, 4)
 
                 .boxed()
-                .map(_ ->
-                        String.valueOf(randomGenerator.nextInt(9))
-                        + randomGenerator.nextInt(9)
-                )
+                .map(_ -> String.format("%02x", randomGenerator.nextInt(256)))
                 .collect(joining(":"));
         var address = vendorChoice.macAddressPrefix() + ":" + suffix;
         return new MacAddress(vendorChoice, address);
@@ -128,7 +125,7 @@ final class MACAddressRotater {
 
     private final String deviceName;
     private final MacAddressSettingCommandFactory macAddressSettingCommandFactory;
-    private final Random variator = new Random();
+    private final SecureRandom variator = new SecureRandom();
 
     public MACAddressRotater(
             String deviceName,
@@ -175,25 +172,26 @@ final class MACAddressRotater {
     /// Continually rotate a MAC address for the device overtime. Interrupt
     /// the thread or trigger a JVM shutdown to stop the rotation.
     public void rotate(long cycleSeconds, RunMode runMode) throws InterruptedException {
-        var exceptionsSoFar = new ArrayDeque<Exception>();
+        var consecutiveExceptions = new ArrayDeque<Exception>();
         for (;;) {
             try {
                 setMacAddress(runMode);
+                consecutiveExceptions.clear();
             } catch (MacAddressRotationException exception) {
-                var remaining = MAX_EXCEPTION_COUNT - exceptionsSoFar.size();
+                consecutiveExceptions.add(exception);
                 err.printf("An error occurred: %s\n", exception);
-                if (MAX_EXCEPTION_COUNT < exceptionsSoFar.size()) {
-                    var message = exceptionsSoFar
+                if (MAX_EXCEPTION_COUNT <= consecutiveExceptions.size()) {
+                    var message = consecutiveExceptions
                             .stream()
                             .map(Object::toString)
                             .collect(joining("\n"));
                     throw new MacAddressRotationException(message);
                 } else {
+                    var remaining = MAX_EXCEPTION_COUNT - consecutiveExceptions.size();
                     err.printf(
                             "The program will stop if %d more errors occur " +
                             "sequentially\n",
                             remaining);
-                    exceptionsSoFar.add(exception);
                 }
             }
             var variation = variate(cycleSeconds);
@@ -309,7 +307,7 @@ public class RotateMACAddresses {
 
     private static boolean isLinux() {
         var os = System.getProperty("os.name");
-        return os.equalsIgnoreCase("linux");
+        return "linux".equalsIgnoreCase(os);
     }
 
     private static void onInterruption() {
