@@ -1,10 +1,15 @@
-# Rotate MAC Addresses — AI Coding Agent Instructions
+# rotate-mac-address - AI Coding Agent Instructions
+
+Canonical instructions for AI coding agents working in this repository. Tool-specific entrypoints symlink to this file where supported:
+- `CLAUDE.md`
+- `.cursorrules`
+- `.github/copilot-instructions.md`
 
 ## Project Overview
 
 Single-file Java 23 CLI tool that continuously rotates MAC addresses using well-known NIC vendor prefixes. Runs directly via source-file execution (JEP 458) with no build system or external dependencies.
 
-## Running
+## Build and Run
 
 ```sh
 # Run (requires Java 23+)
