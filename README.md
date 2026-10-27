@@ -1,6 +1,6 @@
 # Rotate MAC Addresses
 
-[![pipeline status](https://gitlab.com/louis.jackman/rotate_mac_address/badges/master/pipeline.svg)](https://gitlab.com/louis.jackman/rotate_mac_address/-/commits/master)
+[![pipeline status](https://gitlab.com/louis.jackman/rotate-mac-address/badges/main/pipeline.svg)](https://gitlab.com/louis.jackman/rotate-mac-address/-/commits/main)
 
 Randomise MAC addresses with well-known NIC vendor prefixes on a specified
 interval, with a bit of variation added. Likely requires superuser
