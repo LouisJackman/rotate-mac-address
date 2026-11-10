@@ -1,10 +1,10 @@
 # rotate-mac-address - AI Coding Agent Instructions
 
 `AGENTS.md` is the single source of truth for AI coding agents working in this
-repository. The only compatibility entrypoint is
-`.github/copilot-instructions.md`, for Copilot surfaces that do not read
-`AGENTS.md` natively. Do not add `CLAUDE.md` or `.cursorrules`; Claude Code and
-Cursor read `AGENTS.md`.
+repository. `.github/copilot-instructions.md` is a symlink to this file, for
+Copilot surfaces that do not read `AGENTS.md` natively. Edit only `AGENTS.md`;
+do not replace the symlink with a copy. Do not add `CLAUDE.md` or
+`.cursorrules`; Claude Code and Cursor read `AGENTS.md`.
 
 ## Project Overview
 
